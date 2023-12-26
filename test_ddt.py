@@ -62,8 +62,7 @@ for i in range(n_tasks):
     ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
     LS_i = latest - sum(durations[j-1] for j in successors[i]) + 1
 
-    left_sum = gp.quicksum(x[i, t] for t in range(ES_i, LS_i))
-    model.addConstr(left_sum == 1)
+    model.addConstr(gp.quicksum(x[i, t] for t in range(ES_i, LS_i)) == 1)
 
 P = 3
 s = [[0 for _ in range(P)] for _ in range(t+1)]

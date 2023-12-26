@@ -27,7 +27,6 @@ x = model.addMVar((n_tasks, t_max+1), vtype=GRB.BINARY, name="x") # x[i,t] = 1 i
 earliest = 0
 latest = t_max
 
-t = [i for i in range(earliest, latest+1)]
 
 # Set objective
 model.setObjective(gp.quicksum(t*x[i,t] for i in range(n_tasks) for t in range(earliest, latest+1)), GRB.MINIMIZE)
@@ -61,9 +60,10 @@ for t in range(earliest, latest+1):
 for i in range(n_tasks):
     ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
     LS_i = latest - sum(durations[j-1] for j in successors[i]) + 1
+    print(i, predecessors[i], successors[i])
+    print(i, ES_i, LS_i)
 
-    left_sum = gp.quicksum(x[i, t] for t in range(ES_i, LS_i))
-    model.addConstr(left_sum == 1)
+    model.addConstr(gp.quicksum(x[i, t] for t in range(ES_i, LS_i)) == 1)
 
 P = 3
 s = [[0 for _ in range(P)] for _ in range(t+1)]
@@ -86,3 +86,7 @@ model.optimize()
 temp = model.x
 print(len(temp))
 print(model.objVal)
+# print all possible solutions
+for v in model.getVars():
+    if v.X > 0:
+        print('%s %g' % (v.varName, v.x))
