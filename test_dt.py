@@ -58,10 +58,12 @@ for t in range(earliest, latest+1):
         model.addConstr(sum_left <= resources[0][r])
 
 for i in range(n_tasks):
-    ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
-    LS_i = latest - sum(durations[j-1] for j in successors[i]) + 1
-    print(i, predecessors[i], successors[i])
-    print(i, ES_i, LS_i)
+    if i == 0:
+        ES_i = 0
+        LS_i = latest
+    else:
+        ES_i = sum(durations[j] for j in predecessors[i-1]) + 1 if len(predecessors[i]) > 0 else 0
+        LS_i = latest - sum(durations[j-1] for j in successors[i]) + 1
 
     model.addConstr(gp.quicksum(x[i, t] for t in range(ES_i, LS_i)) == 1)
 
