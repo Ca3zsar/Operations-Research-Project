@@ -31,7 +31,10 @@ latest = t_max
 
 
 # Set objective
-model.setObjective(gp.quicksum(t*x[i,t] for i in range(n_tasks) for t in range(earliest, latest+1)), GRB.MINIMIZE)
+ES_n = sum(durations[i] for i in predecessors[-1]) + 1 if len(predecessors[-1]) > 0 else 0
+LS_n = latest - sum(durations[-1] for i in successors[-1]) + 1
+
+model.setObjective(gp.quicksum(t*x[-1, t] for t in range(ES_n, LS_n)), GRB.MINIMIZE)
 
 # indici din fisier -> i - 1
 # indici doar din cod -> i
@@ -50,9 +53,11 @@ for i in range(n_tasks):
         sum_right = gp.quicksum(t*x[i, t] for t in range(ES_i, LS_i)) + durations[i]
         model.addConstr(sum_left >= sum_right)
 
+# (5)
 for t in range(earliest, latest+1):
     for r in range(len(resources[0])):
-        for i in range(n_tasks):
+        left_sum = 0
+        for i in range(1, n_tasks):
             ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
             LS_i = latest - sum(durations[j-1] for j in successors[i]) + 1
 
@@ -60,8 +65,10 @@ for t in range(earliest, latest+1):
             for tau in range(max(ES_i, t-durations[i]+1), min(LS_i, t)):
                 inner_sum += x[i, tau]
 
-        sum_left = gp.quicksum(res_needed[i][r]*inner_sum for i in range(n_tasks))
-        model.addConstr(sum_left <= resources[0][r])
+            term = res_needed[i][r]*inner_sum
+            left_sum += term
+
+        model.addConstr(left_sum <= resources[0][r])
 
 for i in range(n_tasks):
     ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
