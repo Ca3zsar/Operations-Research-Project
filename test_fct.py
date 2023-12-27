@@ -112,30 +112,3 @@ print(model.objVal)
 # print the optimal solution
 # for v in model.getVars():
 #     print('%s %g' % (v.varName, v.x))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
