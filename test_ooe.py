@@ -18,12 +18,13 @@ model = gp.Model("mip1")
 
 # use a branch and bound algorithm
 model.setParam('Method', 2)
+model.update()
 
-n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('ConsProd_j07.rcp')
-predecessors = {i : get_predecessors(i, successors) for i in range(1, n_tasks+1)}
+n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('RCPSP_CPR\Pack_ConsProd\ConsProd_Pack001.rcp')
+predecessors = [get_predecessors(i, successors) for i in range(n_tasks+1)]
 
-A = set([i for i in range(1, n_tasks - 1)])
-EV = set([i for i in range(1, n_tasks - 1)])
+A = set([i for i in range(1, n_tasks)])
+EV = set([i for i in range(1, n_tasks)])
 
 # z_i,e = 1 if task i is executed at event e
 z_i = model.addMVar((n_tasks , n_tasks), vtype=GRB.BINARY, name="z_i")
@@ -39,7 +40,7 @@ u_i = model.addMVar((n_tasks, n_tasks, len(resources[1])), vtype=GRB.INTEGER, na
 # v_i,e,p : amount of resource p produced by activity i at event e
 v_i = model.addMVar((n_tasks, n_tasks, len(resources[1])), vtype=GRB.INTEGER, name="v_i")
 
-t_max = sum(durations)
+t_max = sum(durations.values())
 
 # set objective as min of C_max
 model.setObjective(C_max, GRB.MINIMIZE)
@@ -51,7 +52,7 @@ for i in A:
 # (29)
 for i in A:
     for event in EV:
-        model.addConstr(C_max >= t_e[event] + (z_i[i,event] - z_i[i,event-1])*durations[i])
+        model.addConstr(C_max >= t_e[event] + (z_i[i,event] - z_i[i,event-1])*durations[i-1])
 
 # (30)
 model.addConstr(t_e[0] == 0)
@@ -62,7 +63,7 @@ for event in EV - {n_tasks-1}:
 
 # (32)
 for i in A:
-    for event in EV:
+    for event in EV | {0}:
         EV_prime = {e for e in EV if e > event}
         for f in  EV_prime:
             model.addConstr(t_e[f] >= t_e[event] + ((z_i[i,event] - z_i[i,event-1]) - (z_i[i,f] - z_i[i,f-1]) - 1) * durations[i])
@@ -83,9 +84,9 @@ for i in A:
 for i in A | {n_tasks-1}:
     pred = predecessors[i]
     for j in pred:
-        for event in EV:
+        for event in EV | {0}:
             EV_prime = {e for e in EV if e <= event} | {0}
-            model.addConstr(gp.quicksum(z_i[i,e_prime] for e_prime in EV_prime) <= (event)*(1 - z_i[j,event]))
+            model.addConstr(gp.quicksum(z_i[i,e_prime] for e_prime in EV_prime) <= (event+1)*(1 - z_i[j,event]))
 
 # (36)
 for event in EV:
@@ -94,78 +95,65 @@ for event in EV:
 
 # (37)
 for i in A:
-    for event in EV:
+    for event in EV | {0}:
         for p in range(len(resources[1])):
             model.addConstr(v_i[i,event,p] >= 0)
 
 # (38)
 for i in A:
-    for event in EV:
+    for event in EV | {0}:
         for p in range(len(resources[1])):
             model.addConstr(v_i[i,event,p] >= res_produced[i][p]*(z_i[i,event-1] - z_i[i,event]))
 
 # (39)
 for i in A:
-    for event in EV:
+    for event in EV | {0}:
         for p in range(len(resources[1])):
             model.addConstr(v_i[i,event,p] <= res_produced[i][p]*z_i[i, event-1])
 
 # (40)
 for i in A:
-    for event in EV:
+    for event in EV | {0}:
         for p in range(len(resources[1])):
             model.addConstr(v_i[i,event,p] <= res_produced[i][p]*(1-z_i[i, event]))
 
 # (41)
 for i in A:
-    for event in EV:
+    for event in EV | {0}:
         for p in range(len(resources)):
             model.addConstr(u_i[i,event,p] >= 0)
 
 # (42)
 for i in A:
-    for event in EV - {0}:
+    for event in EV | {0}:
         for p in range(len(resources[1])):
             model.addConstr(u_i[i,event,p] >= res_consumption[i][p]*(z_i[i,event] - z_i[i,event-1]))
 
 # (43)
 for i in A:
-    for event in EV:
+    for event in EV | {0}:
         for p in range(len(resources[1])):
             model.addConstr(u_i[i,event,p] <= res_consumption[i][p]*z_i[i, event])
 
 # (44)
 for i in A:
-    for event in EV:
+    for event in EV | {0}:
         for p in range(len(resources[1])):
             model.addConstr(u_i[i,event,p] <= res_consumption[i][p]*(1-z_i[i, event-1]))
 
 # (45)
-for event in EV - {0}:
+for event in EV:
     for p in range(len(resources[1])):
         model.addConstr(s_e[event,p] == s_e[event-1,p] + gp.quicksum(v_i[i,event,p] for i in range(1, n_tasks - 1)) - gp.quicksum(u_i[i,event,p] for i in range(1, n_tasks)))
 
 # (46)
 for p in range(len(resources[1])):
-    model.addConstr(s_e[0,p] == (resources[1][p] - gp.quicksum(u_i[i,0,p] for i in range(1, n_tasks - 1))))
+    model.addConstr(s_e[0,p] == (resources[1][p] - gp.quicksum(u_i[i,0,p] for i in range(1, n_tasks - 1))), name=f'cons_{p}')
 
 # (47)
-for event in EV:
-    for p in range(len(resources)):
+for event in EV | {0}:
+    for p in range(len(resources[1])):
         model.addConstr(s_e[event,p] >= 0)
-
-# (nuj-1)
-# LS_n = t_max - sum(durations[j-1] for j in successors[-2]) + 1
-# for i in A:
-#     for event in EV:
-#         ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
-#         LS_i = t_max - sum(durations[j-1] for j in successors[i]) + 1
-
-#         left = ES_i * z_i[i,event]
-#         right = LS_i * (z_i[i,event] - z_i[i,event-1]) + LS_n * (1- (z_i[i,event] - z_i[i,event-1]))
-
-#         model.addConstr(left <= t_e[event])
-#         model.addConstr(t_e[event] <= right)
 
 model.optimize()
 

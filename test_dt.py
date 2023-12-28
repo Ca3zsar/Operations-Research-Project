@@ -19,47 +19,66 @@ model = gp.Model("mip1")
 
 # use a branch and bound algorithm
 model.setParam('Method', 2)
+model.update()
 
-n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('ConsProd_j07.rcp')
-predecessors = [get_predecessors(i, successors) for i in range(1, n_tasks+1)]
-t_max = sum(durations)
+n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('RCPSP_CPR\Pack_ConsProd\ConsProd_Pack001.rcp')
+predecessors = [get_predecessors(i, successors) for i in range(n_tasks+1)]
+t_max = sum(durations.values())
 
-x = model.addMVar((n_tasks, t_max+1), vtype=GRB.BINARY, name="x") # x[i,t] = 1 if task i is executed at time t
+x = model.addMVar((n_tasks, t_max+2), vtype=GRB.BINARY, name="x") # x[i,t] = 1 if task i is executed at time t
+s = model.addMVar((t_max+1, len(resources[1])), vtype=GRB.INTEGER, name="s") # s[i,p] = stock level of resource p after task i
 # Set other data
 earliest = 0
 latest = t_max
 
+print("TMAX")
+print(t_max)
+
+print("PREDECESSORS")
+print(predecessors)
+print("-----------")
+
+print("DURATIONS")
+print(durations)
+
+ES = []
+LS = []
+
+for i in range(n_tasks):
+    ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
+    LS_i = latest - sum(durations[j] for j in successors[i]) - durations[i] - 1
+    ES.append(ES_i)
+    LS.append(LS_i)
+    print(f"ES[{i}] = {ES_i}")
+    print(f"LS[{i}] = {LS_i}")
 
 # Set objective
-ES_n = sum(durations[i] for i in predecessors[-1]) + 1 if len(predecessors[-1]) > 0 else 0
-LS_n = latest - sum(durations[-1] for i in successors[-1]) + 1
-
-model.setObjective(gp.quicksum(t*x[-1, t] for t in range(ES_n, LS_n)), GRB.MINIMIZE)
+model.setObjective(gp.quicksum(t*x[-1, t] for t in range(ES[-1], LS[-1])), GRB.MINIMIZE)
 
 # indici din fisier -> i - 1
 # indici doar din cod -> i
 
 # get all precedences
+# (4)
 for i in range(n_tasks):
-    pred_i = predecessors[i]
-    ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
-    LS_i = latest - sum(durations[j-1] for j in successors[i]) + 1
+    ES_i = ES[i]
+    LS_i = LS[i]
     
     for j in successors[i]:
-        ES_j = sum(durations[k] for k in predecessors[j-1]) + 1 if len(predecessors[j-1]) > 0 else 0
-        LS_j = latest - sum(durations[k-1] for k in successors[j-1]) + 1
+        ES_j = ES[j-1]
+        LS_j = LS[j-1]
     
         sum_left = gp.quicksum(t*x[j-1, t] for t in range(ES_j, LS_j))
-        sum_right = gp.quicksum(t*x[i, t] for t in range(ES_i, LS_i)) + durations[i]
-        model.addConstr(sum_left >= sum_right)
+        sum_right = gp.quicksum(t*x[i, t] for t in range(ES_i, LS_i))
+        model.addConstr(sum_left >= sum_right  + durations[i])
 
 # (5)
-for t in range(earliest, latest+1):
+for t in range(latest+1):
     for r in range(len(resources[0])):
         left_sum = 0
         for i in range(1, n_tasks):
-            ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
-            LS_i = latest - sum(durations[j-1] for j in successors[i]) + 1
+            ES_i = ES[i]
+            LS_i = LS[i]
 
             inner_sum = 0
             for tau in range(max(ES_i, t-durations[i]+1), min(LS_i, t)):
@@ -71,30 +90,34 @@ for t in range(earliest, latest+1):
         model.addConstr(left_sum <= resources[0][r])
 
 for i in range(n_tasks):
-    ES_i = sum(durations[j] for j in predecessors[i]) + 1 if len(predecessors[i]) > 0 else 0
-    LS_i = latest - sum(durations[j-1] for j in successors[i]) + 1
+    ES_i = ES[i]
+    LS_i = LS[i]
 
-    model.addConstr(gp.quicksum(x[i, t] for t in range(ES_i, LS_i)) == 1)
+    model.addConstr(gp.quicksum(x[i, t] for t in range(ES[i], LS[i] + 1)) == 1)
+    # model.addConstr(gp.quicksum(x[i, t] for t in set(range(ES[i])) | set(range(LS[i] + 1, x.shape[1]-1))) == 0)
 
 P = 3
-s = [[0 for _ in range(P)] for _ in range(t+1)]
 
 for p in range(P):
-    inner_sum = [x[i, 0] * res_consumption[i][p] for i in range(n_tasks)]
-    s[0][p] = resources[1][p] - sum(inner_sum)
+    inner_sum = [x[i, 0] * res_consumption[i][p] for i in range(1, n_tasks)]
+    model.addConstr(s[0, p] == resources[1][p] - sum(inner_sum))
 
 for t in range(1, latest+1):
     for p in range(P):
-        first_sum = [x[i, t-durations[i]] * res_produced[i][p] for i in range(n_tasks)]
-        second_lum = [x[i, t] * res_consumption[i][p] for i in range(n_tasks)]
-        s[t][p] = s[t-1][p] + sum(first_sum) - sum(second_lum)
+        first_sum = [(x[i, t-durations[i]] if t-durations[i] > 0 else 0) * res_produced[i][p] for i in range(1, n_tasks)]
+        second_lum = [x[i, t] * res_consumption[i][p] for i in range(1, n_tasks)]
+        model.addConstr(s[t, p]== s[t-1, p] + sum(first_sum) - sum(second_lum), name=f"stock_{t}_{p}")
 
 for t in range(earliest, latest+1):
     for p in range(P):
-        model.addConstr(s[t][p] >= 0)
+        model.addConstr(s[t, p] >= 0)
         
 model.optimize()
 
 temp = model.x
 print(len(temp))
 print(model.objVal)
+# for var in model.getVars():
+#     # if var.x > 0:
+#     print(f'{var.varName} {var.x}')
+# model.write("model.lp")
