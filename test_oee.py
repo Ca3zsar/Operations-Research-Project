@@ -20,13 +20,13 @@ model = gp.Model("mip1")
 model.setParam('Method', 2)
 
 n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('ConsProd_j07.rcp')
-predecessors = [get_predecessors(i, successors) for i in range(1, n_tasks+1)]
+predecessors = {i : get_predecessors(i, successors) for i in range(1, n_tasks+1)}
 
 A = set([i for i in range(1, n_tasks - 1)])
-EV = set([i for i in range(n_tasks)])
+EV = set([i for i in range(1, n_tasks - 1)])
 
 # z_i,e = 1 if task i is executed at event e
-z_i = model.addMVar((n_tasks, n_tasks), vtype=GRB.BINARY, name="z_i")
+z_i = model.addMVar((n_tasks , n_tasks), vtype=GRB.BINARY, name="z_i")
 # t_e = date of event e
 t_e = model.addMVar(n_tasks, vtype=GRB.INTEGER, name="t_e")
 # C_max = makespan
@@ -50,7 +50,7 @@ for i in A:
 
 # (29)
 for i in A:
-    for event in EV - {0}:
+    for event in EV:
         model.addConstr(C_max >= t_e[event] + (z_i[i,event] - z_i[i,event-1])*durations[i])
 
 # (30)
@@ -62,25 +62,30 @@ for event in EV - {n_tasks-1}:
 
 # (32)
 for i in A:
-    for event in EV - {0}:
-        for f in range(event+1, n_tasks):
+    for event in EV:
+        EV_prime = {e for e in EV if e > event}
+        for f in  EV_prime:
             model.addConstr(t_e[f] >= t_e[event] + ((z_i[i,event] - z_i[i,event-1]) - (z_i[i,f] - z_i[i,f-1]) - 1) * durations[i])
 
 # (33)
 for i in A:
-    for event in EV - {0}:
-        model.addConstr(gp.quicksum(z_i[i,e] for e in range(event)) <= event*(1 - z_i[i,event] + z_i[i,event-1]))
+    for event in EV:
+        EV_prime = {e for e in EV if e < event}
+        model.addConstr(gp.quicksum(z_i[i,e] for e in EV_prime) <= event*(1 - z_i[i,event] + z_i[i,event-1]))
 
 # (34)
 for i in A:
-    for event in EV - {0}:
-        model.addConstr(gp.quicksum(z_i[i,e] for e in range(event, n_tasks-1)) <= (n_tasks-event)*(1 + (z_i[i,event] - z_i[i,event-1])))
+    for event in EV:
+        EV_prime = {e for e in EV if e >= event}
+        model.addConstr(gp.quicksum(z_i[i,e] for e in EV_prime) <= (n_tasks-event)*(1 + (z_i[i,event] - z_i[i,event-1])))
 
 # (35)
-for i in A:
-    for j in successors[i]:
+for i in A | {n_tasks-1}:
+    pred = predecessors[i]
+    for j in pred:
         for event in EV:
-            model.addConstr(gp.quicksum(z_i[j-1,e_prime] for e_prime in range(event+1)) <= (event+1)*(1 - z_i[i,event]), name=f'R35_{i}_{j}_{event}')
+            EV_prime = {e for e in EV if e <= event} | {0}
+            model.addConstr(gp.quicksum(z_i[i,e_prime] for e_prime in EV_prime) <= (event)*(1 - z_i[j,event]))
 
 # (36)
 for event in EV:
@@ -169,5 +174,5 @@ print(len(temp))
 print(model.objVal)
 # print the optimal solution
 model.write("model.lp")
-# for v in model.getVars():
-#     print('%s %g' % (v.varName, v.x))
+for v in model.getVars():
+    print('%s %g' % (v.varName, v.x))
