@@ -18,9 +18,10 @@ model = gp.Model("mip1")
 
 # use a branch and bound algorithm
 model.setParam('Method', 2)
+model.setParam('TimeLimit', 500)
 model.update()
 
-n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('RCPSP_CPR\Pack_ConsProd\ConsProd_Pack001.rcp')
+n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('RCPSP_CPR\Pack_ConsProd\ConsProd_Pack008.rcp')
 predecessors = [get_predecessors(i, successors) for i in range(n_tasks+1)]
 
 A = set([i for i in range(1, n_tasks)])
@@ -46,13 +47,11 @@ t_max = sum(durations.values())
 model.setObjective(C_max, GRB.MINIMIZE)
 
 # (28) 
-for i in A:
-    model.addConstr(gp.quicksum(z_i[i,e] for e in EV) >= 1)
+model.addConstrs(gp.quicksum(z_i[i,e] for e in EV) >= 1 for i in A)
 
 # (29)
 for i in A:
-    for event in EV:
-        model.addConstr(C_max >= t_e[event] + (z_i[i,event] - z_i[i,event-1])*durations[i-1])
+    model.addConstrs(C_max >= t_e[event] + (z_i[i,event] - z_i[i,event-1])*durations[i-1] for event in EV)
 
 # (30)
 model.addConstr(t_e[0] == 0)
@@ -160,7 +159,15 @@ model.optimize()
 temp = model.x
 print(len(temp))
 print(model.objVal)
-# print the optimal solution
-model.write("model.lp")
-for v in model.getVars():
-    print('%s %g' % (v.varName, v.x))
+
+# check the gap
+print(model.MIPGap)
+
+# check the number of nodes explored
+print(model.NodeCount)
+
+# check the time elapsed
+print(model.Runtime)
+
+
+#12

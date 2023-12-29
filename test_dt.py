@@ -19,9 +19,10 @@ model = gp.Model("mip1")
 
 # use a branch and bound algorithm
 model.setParam('Method', 2)
+model.setParam('TimeLimit', 500)
 model.update()
 
-n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('RCPSP_CPR\Pack_ConsProd\ConsProd_Pack001.rcp')
+n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info('RCPSP_CPR\Pack_ConsProd\ConsProd_Pack008.rcp')
 predecessors = [get_predecessors(i, successors) for i in range(n_tasks+1)]
 t_max = sum(durations.values())
 
@@ -31,16 +32,6 @@ s = model.addMVar((t_max+1, len(resources[1])), vtype=GRB.INTEGER, name="s") # s
 earliest = 0
 latest = t_max
 
-print("TMAX")
-print(t_max)
-
-print("PREDECESSORS")
-print(predecessors)
-print("-----------")
-
-print("DURATIONS")
-print(durations)
-
 ES = []
 LS = []
 
@@ -49,8 +40,6 @@ for i in range(n_tasks):
     LS_i = latest - sum(durations[j] for j in successors[i]) - durations[i] - 1
     ES.append(ES_i)
     LS.append(LS_i)
-    print(f"ES[{i}] = {ES_i}")
-    print(f"LS[{i}] = {LS_i}")
 
 # Set objective
 model.setObjective(gp.quicksum(t*x[-1, t] for t in range(ES[-1], LS[-1])), GRB.MINIMIZE)
@@ -117,7 +106,12 @@ model.optimize()
 temp = model.x
 print(len(temp))
 print(model.objVal)
-# for var in model.getVars():
-#     # if var.x > 0:
-#     print(f'{var.varName} {var.x}')
-# model.write("model.lp")
+
+# check the gap
+print(model.MIPGap)
+
+# check the number of nodes explored
+print(model.NodeCount)
+
+# check the time elapsed
+print(model.Runtime)
