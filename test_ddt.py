@@ -19,7 +19,7 @@ def solve_instance(path):
 
     # use a branch and bound algorithm
     model.setParam('Method', 2)
-    model.setParam('TimeLimit', 500)
+    model.setParam('TimeLimit', 300)
     model.update()
 
     n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info(path)
@@ -85,7 +85,7 @@ def solve_instance(path):
         model.addConstr(gp.quicksum(x[i, t] for t in range(ES[i], LS[i] + 1)) == 1)
         # model.addConstr(gp.quicksum(x[i, t] for t in set(range(ES[i])) | set(range(LS[i] + 1, x.shape[1]-1))) == 0)
 
-    P = 3
+    P = len(resources[1])
 
     for p in range(P):
         inner_sum = [x[i, 0] * res_consumption[i][p] for i in range(1, n_tasks)]
@@ -117,10 +117,10 @@ def solve_instance(path):
             
     model.optimize()
 
-    is_feasible =(model.Status == GRB.OPTIMAL)
+    is_feasible = (model.Status != GRB.INFEASIBLE)
 
     if not is_feasible:
-        return None, None, None, is_feasible, None, None, None, None
+        return model.Runtime, None, None, is_feasible, None, None, None, None
     
     # set the solution number parameter to select the solution
     nSolutions = model.SolCount
@@ -130,7 +130,10 @@ def solve_instance(path):
     for sol in range(nSolutions):
         model.setParam(GRB.Param.SolutionNumber, sol)
         dev_best.append((model.PoolObjVal - model.objVal))
-        all_solutions.append(model.PoolObjVal)
+        all_solutions.append(int(model.PoolObjVal))
+
+    average_dev = sum(dev_best)/len(dev_best)
+    dev_best = average_dev * 100 / model.ObjVal
 
     return model.Runtime, model.MIPGap, model.NodeCount, is_feasible, model.objVal, dev_best, model.SolCount, all_solutions
 

@@ -3,6 +3,7 @@ import test_dt, test_ddt, test_fct, test_ooe, test_ooe_prec
 import os
 import pandas as pd
 import random
+import time as tm
 
 # list the directories to be searched for test files
 root_dir = 'RCPSP_CPR'
@@ -19,12 +20,14 @@ formulations = {
 }
 
 files_number = {}
-percentage_of_files_to_be_processed = 0.5
+percentage_of_files_to_be_processed = 0.6
+current_date_time = tm.strftime("%Y%m%d-%H%M%S")
 
 for dir in os.listdir(root_dir):
     if os.path.isdir(os.path.join(root_dir, dir)):
         files_number[dir] = len(os.listdir(os.path.join(root_dir, dir)))
         files_considered = int(percentage_of_files_to_be_processed * files_number[dir])
+        random.seed(83)
         selected_files = random.sample(os.listdir(os.path.join(root_dir, dir)), files_considered)
         for file in selected_files:
             if file.endswith('.rcp'):
@@ -37,13 +40,12 @@ for dir in os.listdir(root_dir):
                         continue
                     try:
                         time, gap, nodes, is_feasible, optimal, dev_best, solution_count, all_solutions = formulations[model](os.path.join(root_dir, dir, file))
-                        results = results.append({'dataset': dir, 'file': file, 'model': model, 'time': time, 'gap%': gap, 'nodes': nodes, 'is_feasible': is_feasible, 'obtimal%': optimal, 'dev_best%': dev_best, 'solution_count': solution_count, 'all_solutions': all_solutions}, ignore_index=True)
-                    except:
+                        results = pd.concat([results, pd.DataFrame({'dataset': dir, 'file': file, 'model': model, 'time': time, 'gap%': gap, 'nodes': nodes, 'is_feasible': is_feasible, 'obtimal%': optimal, 'dev_best%': dev_best, 'solution_count': solution_count, 'all_solutions': [str(all_solutions)]})], ignore_index=True)
+                    except Exception as e:
+                        print(e)
                         print(f"Error in file {file} with model {model}")
-                        results = results.append({'dataset': dir, 'file': file, 'model': model, 'time': None, 'gap%': None, 'nodes': None, 'is_feasible': None, 'obtimal%': None, 'dev_best%': None, 'solution_count': None, 'all_solutions': None}, ignore_index=True)
+                        results = pd.concat([results, pd.DataFrame({'dataset': dir, 'file': file, 'model': model, 'time': time, 'gap%': gap, 'nodes': nodes, 'is_feasible': is_feasible, 'obtimal%': optimal, 'dev_best%': dev_best, 'solution_count': solution_count, 'all_solutions': [str(all_solutions)]})], ignore_index=True)
                         continue
+
+                    results.to_csv(f"results_{current_date_time}.csv")
         print("---------")
-
-
-
-results.to_csv('results.csv', index=False)
