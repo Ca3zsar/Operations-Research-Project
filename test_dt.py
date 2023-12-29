@@ -86,7 +86,7 @@ def solve_instance(path):
         model.addConstr(gp.quicksum(x[i, t] for t in range(ES[i], LS[i] + 1)) == 1)
         # model.addConstr(gp.quicksum(x[i, t] for t in set(range(ES[i])) | set(range(LS[i] + 1, x.shape[1]-1))) == 0)
 
-    P = 3
+    P = len(resources[1])
 
     for p in range(P):
         inner_sum = [x[i, 0] * res_consumption[i][p] for i in range(1, n_tasks)]
@@ -104,15 +104,25 @@ def solve_instance(path):
             
     model.optimize()
 
-    temp = model.x
-    print(len(temp))
-    print(model.objVal)
+    is_feasible =(model.Status == GRB.OPTIMAL)
 
-    # check the gap
-    print(model.MIPGap)
+    if not is_feasible:
+        return None, None, None, is_feasible, None, None, None, None
+    
+    # set the solution number parameter to select the solution
+    nSolutions = model.SolCount
+    all_solutions = []
+    dev_best = []
+    
+    for sol in range(nSolutions):
+        model.setParam(GRB.Param.SolutionNumber, sol)
+        dev_best.append((model.PoolObjVal - model.objVal))
+        all_solutions.append(model.PoolObjVal)
 
-    # check the number of nodes explored
-    print(model.NodeCount)
+    return model.Runtime, model.MIPGap, model.NodeCount, is_feasible, model.objVal, dev_best, model.SolCount, all_solutions
 
-    # check the time elapsed
-    print(model.Runtime)
+
+# only for test purposes
+if __name__ == "__main__":
+    path = "RCPSP_CPR/BL_ConsProd/ConsProd_bl2002.rcp"
+    solve_instance(path)
