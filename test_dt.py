@@ -14,7 +14,7 @@ def get_predecessors(index, succesors):
 
     return set(predecessors)
 
-def solve_instance(path, max_time=330):
+def solve_instance(path, max_time=300):
     # Create a new model
     start = perf_counter()
     model = gp.Model("mip1")

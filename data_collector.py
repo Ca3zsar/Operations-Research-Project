@@ -49,7 +49,7 @@ for dir in os.listdir(root_dir):
 
                     # check that the call lasts at most 300 seconds, otherwise skip the file
                     with mp.Pool(processes=1) as pool:
-                        async_result = pool.apply_async(formulations[model], (os.path.join(root_dir, dir, file), MAX_TIME))
+                        async_result = pool.apply_async(formulations[model], (os.path.join(root_dir, dir, file), ))
                         try:
                             time, gap, nodes, is_feasible, optimal, dev_best, solution_count, all_solutions = async_result.get(MAX_TIME)
                             results = pd.concat([results, pd.DataFrame({'dataset': dir, 'file': file, 'model': model, 'time': time, 'gap%': gap, 'nodes': nodes, 'is_feasible': is_feasible, 'obtimal%': optimal, 'dev_best%': dev_best, 'solution_count': solution_count, 'all_solutions': [str(all_solutions)]})], ignore_index=True)

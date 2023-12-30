@@ -14,14 +14,13 @@ def get_predecessors(index, succesors):
 
     return set(predecessors)
 
-def solve_instance(path, max_time=330):
+def solve_instance(path, max_time=300):
     # Create a new model
     start = perf_counter()
     model = gp.Model("mip1")
 
     # use a branch and bound algorithm
     model.setParam('Method', 2)
-    model.setParam('TimeLimit', 300)
     model.update()
 
     n_tasks, resources, durations, res_needed, res_consumption, res_produced, n_successors, successors = read_info(path)
