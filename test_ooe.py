@@ -163,6 +163,9 @@ def solve_instance(path):
     nSolutions = model.SolCount
     all_solutions = []
     dev_best = []
+
+    if nSolutions == 0:
+        return model.Runtime, None, model.NodeCount, is_feasible, model.objVal, None, model.SolCount, None
     
     for sol in range(nSolutions):
         model.setParam(GRB.Param.SolutionNumber, sol)
