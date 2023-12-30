@@ -1,8 +1,8 @@
 import gurobipy as gp
 from gurobipy import GRB
-
+from time import perf_counter
 from read_file import read_info
-
+import numpy as np
 
 def get_predecessors(index, succesors):
     predecessors = []
@@ -13,8 +13,9 @@ def get_predecessors(index, succesors):
 
     return set(predecessors)
 
-def solve_instance(path):
+def solve_instance(path, max_time=330):
     # Create a new model
+    start = perf_counter()
     model = gp.Model("mip1")
 
     # use a branch and bound algorithm
@@ -41,6 +42,9 @@ def solve_instance(path):
         ES.append(ES_i)
         LS.append(LS_i)
 
+    ES = np.array(ES)
+    LS = np.array(LS)
+
     # Set objective
     model.setObjective(gp.quicksum(t*x[-1, t] for t in range(ES[-1], LS[-1])), GRB.MINIMIZE)
 
@@ -62,20 +66,19 @@ def solve_instance(path):
             model.addConstr(sum_left >= sum_right  + durations[i])
 
     # (5)
-    for t in range(latest+1):
-        for r in range(len(resources[0])):
-            left_sum = 0
+    inner_sum = {}
+    for r in range(len(resources[0])):
+        for t in range(latest+1):
+            left_sum = gp.LinExpr()
             for i in range(1, n_tasks):
                 ES_i = ES[i]
                 LS_i = LS[i]
 
-                inner_sum = 0
-                for tau in range(max(ES_i, t-durations[i]+1), min(LS_i, t)):
-                    inner_sum += x[i, tau]
+                if not inner_sum.get((i, t)):
+                    inner_sum[(i, t)] = gp.quicksum(x[i, tau] for tau in range(max(ES_i, t-durations[i]+1), min(LS_i, t)))
 
-                term = res_needed[i][r]*inner_sum
+                term = res_needed[i][r] * inner_sum[(i, t)]
                 left_sum += term
-
             model.addConstr(left_sum <= resources[0][r])
 
     for i in range(n_tasks):
@@ -93,9 +96,15 @@ def solve_instance(path):
 
     for t in range(1, latest+1):
         for p in range(P):
-            first_sum = [(x[i, t-durations[i]] if t-durations[i] > 0 else 0) * res_produced[i][p] for i in range(1, n_tasks)]
-            second_lum = [x[i, t] * res_consumption[i][p] for i in range(1, n_tasks)]
-            model.addConstr(s[t, p]== s[t-1, p] + sum(first_sum) - sum(second_lum), name=f"stock_{t}_{p}")
+            first_sum = gp.LinExpr()
+            for i in range(1, n_tasks):
+                first_sum += (x[i, t-durations[i]] if t-durations[i] > 0 else 0) * res_produced[i][p]
+            
+            second_sum = gp.LinExpr()
+            for i in range(1, n_tasks):
+                second_sum += x[i, t] * res_consumption[i][p]
+
+            model.addConstr(s[t, p]== s[t-1, p] + first_sum - second_sum, name=f"stock_{t}_{p}")
 
     for t in range(earliest, latest+1):
         for p in range(P):
@@ -114,7 +123,13 @@ def solve_instance(path):
                 second_sum = gp.quicksum(x[j-1, tau] for tau in range(ES_j, min(LS_j, t+durations[i]-1)))
 
                 model.addConstr(first_sum + second_sum <= 1)
-            
+    
+    stop = perf_counter()
+    if stop - start > max_time:
+        return model.Runtime, None, None, False, None, None, None, None
+    
+    model.setParam('TimeLimit', max_time - int((stop - start)))
+    
     model.optimize()
 
     is_feasible = (model.Status != GRB.INFEASIBLE)

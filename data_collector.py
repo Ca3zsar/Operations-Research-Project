@@ -35,6 +35,8 @@ for dir in os.listdir(root_dir):
         random.seed(83)
         selected_files = random.sample(os.listdir(os.path.join(root_dir, dir)), files_considered)
         
+        MAX_TIME = 330
+
         for file in selected_files:
             if file.endswith('.rcp'):
                 file_number += 1
@@ -47,14 +49,14 @@ for dir in os.listdir(root_dir):
 
                     # check that the call lasts at most 300 seconds, otherwise skip the file
                     with mp.Pool(processes=1) as pool:
-                        async_result = pool.apply_async(formulations[model], (os.path.join(root_dir, dir, file),))
+                        async_result = pool.apply_async(formulations[model], (os.path.join(root_dir, dir, file), MAX_TIME))
                         try:
-                            time, gap, nodes, is_feasible, optimal, dev_best, solution_count, all_solutions = async_result.get(330)
+                            time, gap, nodes, is_feasible, optimal, dev_best, solution_count, all_solutions = async_result.get(MAX_TIME)
                             results = pd.concat([results, pd.DataFrame({'dataset': dir, 'file': file, 'model': model, 'time': time, 'gap%': gap, 'nodes': nodes, 'is_feasible': is_feasible, 'obtimal%': optimal, 'dev_best%': dev_best, 'solution_count': solution_count, 'all_solutions': [str(all_solutions)]})], ignore_index=True)
                             
                         except mp.context.TimeoutError:
-                            results = pd.concat([results, pd.DataFrame({'dataset': dir, 'file': file, 'model': model, 'time': 330, 'gap%': None, 'nodes': None, 'is_feasible': True, 'obtimal%': None, 'dev_best%': None, 'solution_count': 0, 'all_solutions': [str(None)]})], ignore_index=True)
-                            print(f"Timeout of 330 seconds reached for file {file} and model {model}")
+                            results = pd.concat([results, pd.DataFrame({'dataset': dir, 'file': file, 'model': model, 'time': MAX_TIME, 'gap%': None, 'nodes': None, 'is_feasible': True, 'obtimal%': None, 'dev_best%': None, 'solution_count': 0, 'all_solutions': [str(None)]})], ignore_index=True)
+                            print(f"Timeout of {MAX_TIME} seconds reached for file {file} and model {model}")
                         
 
 

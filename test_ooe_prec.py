@@ -1,5 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
+from time import perf_counter
 
 from read_file import read_info
 
@@ -12,8 +13,9 @@ def get_predecessors(index, succesors):
 
     return set(predecessors)
 
-def solve_instance(path):
+def solve_instance(path, max_time=330):
     # Create a new model
+    start = perf_counter()
     model = gp.Model("mip1")
 
     # use a branch and bound algorithm
@@ -161,6 +163,12 @@ def solve_instance(path):
         indices = set(range(no_predecessors)) | set(range(n_tasks - no_successors + 1, n_tasks))
         for event in indices:
             model.addConstr(z_i[i,event] == 0)
+
+    stop = perf_counter()
+    if stop - start > max_time:
+        return model.Runtime, None, None, False, None, None, None, None
+    
+    model.setParam('TimeLimit', max_time - int((stop - start)))
 
     model.optimize()
 
