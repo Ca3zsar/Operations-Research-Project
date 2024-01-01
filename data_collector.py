@@ -14,8 +14,8 @@ file_number = 0
 
 results = pd.DataFrame(columns=['dataset', 'file', 'model', 'time', 'gap%', 'nodes', 'is_feasible', 'obtimal%', 'dev_best%', 'solution_count', 'all_solutions'])
 formulations = {
-    'dt': test_dt.solve_instance,
-    # 'ddt': test_ddt.solve_instance,
+    # 'dt': test_dt.solve_instance,
+    'ddt': test_ddt.solve_instance,
     # 'fct': test_fct.solve_instance,
     # 'ooe': test_ooe.solve_instance,
     # 'ooe_prec': test_ooe_prec.solve_instance
@@ -27,7 +27,7 @@ current_date_time = tm.strftime("%Y%m%d-%H%M%S")
 
 for dir in os.listdir(root_dir):
     if os.path.isdir(os.path.join(root_dir, dir)):
-        if dir == 'Pack_d_ConsProd' or dir == 'KSD30_ConsProd' or dir == 'BL_ConsProd' or dir == 'Pack_ConsProd':
+        if dir == 'Pack_d_ConsProd' or dir == 'KSD15_d_ConsProd' or dir == 'BL_ConsProd' or dir == 'Pack_ConsProd':
             continue
 
         files_number[dir] = len(os.listdir(os.path.join(root_dir, dir)))

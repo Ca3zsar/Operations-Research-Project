@@ -113,16 +113,19 @@ def solve_instance(path, max_time=300):
         ES_i = ES[i]
         LS_i = LS[i]
 
+        first_big_sum = gp.quicksum(x[i, tau] for tau in range(ES_i, LS_i+1))
         for t in range(ES_i, LS_i+1):
-            first_sum = gp.quicksum(x[i, tau] for tau in range(t, LS_i))
+            first_sum = first_big_sum - gp.quicksum(x[i, tau] for tau in range(ES_i, t))
+            right_end = t+durations[i]-1
             
             for j in successors[i]:
                 LS_j = LS[j-1]
+                ES_j = ES[j-1]
 
-                second_sum = gp.quicksum(x[j-1, tau] for tau in range(ES_j, min(LS_j, t+durations[i]-1)))
+                second_sum = gp.quicksum(x[j-1, tau] for tau in range(ES_j, min(LS_j, right_end)))
 
                 model.addConstr(first_sum + second_sum <= 1)
-    
+                
     stop = perf_counter()
     if stop - start > max_time:
         return model.Runtime, None, None, False, None, None, None, None
@@ -157,5 +160,5 @@ def solve_instance(path, max_time=300):
 
 # only for test purposes
 if __name__ == "__main__":
-    path = "RCPSP_CPR/BL_ConsProd/ConsProd_bl2002.rcp"
+    path = "RCPSP_CPR/KSD30_ConsProd/ConsProd_j3033_3.rcp"
     solve_instance(path)
