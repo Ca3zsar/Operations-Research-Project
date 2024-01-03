@@ -1,0 +1,57 @@
+,dataset,file,model,time,gap%,nodes,is_feasible,obtimal%,dev_best%,solution_count,all_solutions
+0,BL_ConsProd,ConsProd_bl2513.rcp,ddt,3.3459999561309814,0.0,1.0,True,35.0,0.0,1,[35]
+1,BL_ConsProd,ConsProd_bl2511.rcp,ddt,1.2430000305175781,0.0,1.0,True,32.0,0.0,1,[32]
+2,BL_ConsProd,ConsProd_bl2007.rcp,ddt,0.5019998550415039,0.0,1.0,True,24.0,0.0,1,[24]
+3,BL_ConsProd,ConsProd_bl2010.rcp,ddt,0.4179999828338623,0.0,1.0,True,20.0,0.0,1,[20]
+4,BL_ConsProd,ConsProd_bl2506.rcp,ddt,1.691999912261963,0.0,1.0,True,41.0,20.73170731707317,2,"[41, 58]"
+5,BL_ConsProd,ConsProd_bl2004.rcp,ddt,0.7289998531341553,0.0,1.0,True,20.0,0.0,1,[20]
+6,BL_ConsProd,ConsProd_bl2005.rcp,ddt,0.17400002479553223,0.0,0.0,True,17.0,94.11764705882354,2,"[17, 49]"
+7,BL_ConsProd,ConsProd_bl2015.rcp,ddt,0.6689999103546143,0.0,1.0,True,18.0,0.0,1,[18]
+8,BL_ConsProd,ConsProd_bl2008.rcp,ddt,0.7109999656677246,0.0,1.0,True,25.0,0.0,1,[25]
+9,BL_ConsProd,ConsProd_bl2518.rcp,ddt,1.250999927520752,0.0,1.0,True,25.0,0.0,1,[25]
+10,BL_ConsProd,ConsProd_bl2011.rcp,ddt,1.1170001029968262,0.0,1.0,True,20.0,0.0,1,[20]
+11,BL_ConsProd,ConsProd_bl2515.rcp,ddt,0.8539998531341553,0.0,1.0,True,42.0,0.0,1,[42]
+12,BL_ConsProd,ConsProd_bl2508.rcp,ddt,0.875,0.0,1.0,True,42.0,28.571428571428573,2,"[42, 66]"
+13,BL_ConsProd,ConsProd_bl2003.rcp,ddt,0.4649999141693115,0.0,1.0,True,18.0,0.0,1,[18]
+14,BL_ConsProd,ConsProd_bl2520.rcp,ddt,1.6070001125335693,0.0,1.0,True,38.0,0.0,1,[38]
+15,BL_ConsProd,ConsProd_bl2006.rcp,ddt,0.5199999809265137,0.0,1.0,True,21.0,0.0,1,[21]
+16,BL_ConsProd,ConsProd_bl2013.rcp,ddt,0.8840000629425049,0.0,1.0,True,25.0,75.0,4,"[25, 37, 56, 57]"
+17,BL_ConsProd,ConsProd_bl2510.rcp,ddt,0.8110001087188721,0.0,1.0,True,40.0,0.0,1,[40]
+18,BL_ConsProd,ConsProd_bl2019.rcp,ddt,0.6129999160766602,0.0,1.0,True,15.0,94.44444444444443,6,"[15, 16, 19, 24, 50, 51]"
+19,BL_ConsProd,ConsProd_bl2512.rcp,ddt,3.671999931335449,0.0,1.0,True,44.0,0.0,1,[44]
+20,BL_ConsProd,ConsProd_bl2017.rcp,ddt,0.45600008964538574,0.0,1.0,True,18.0,102.77777777777777,2,"[18, 55]"
+21,BL_ConsProd,ConsProd_bl2009.rcp,ddt,0.12600016593933105,0.0,0.0,True,18.0,83.33333333333333,2,"[18, 48]"
+22,BL_ConsProd,ConsProd_bl2016.rcp,ddt,0.7560000419616699,0.0,1.0,True,22.0,115.15151515151514,3,"[22, 59, 61]"
+23,Pack_ConsProd,ConsProd_Pack032.rcp,ddt,20.703999996185303,0.0,1.0,True,89.0,0.0,1,[89]
+24,Pack_ConsProd,ConsProd_Pack054.rcp,ddt,11.36299991607666,0.0,1.0,True,54.0,0.9259259259259259,2,"[54, 55]"
+25,Pack_ConsProd,ConsProd_Pack030.rcp,ddt,0.6040000915527344,0.0,1.0,True,11.0,0.0,1,[11]
+26,Pack_ConsProd,ConsProd_Pack006.rcp,ddt,1.7970001697540283,0.0,1.0,True,23.0,115.21739130434783,2,"[23, 76]"
+27,Pack_ConsProd,ConsProd_Pack009.rcp,ddt,2.3420000076293945,0.0,1.0,True,18.0,122.22222222222223,6,"[18, 19, 22, 30, 75, 76]"
+28,Pack_ConsProd,ConsProd_Pack025.rcp,ddt,6.28600001335144,0.0,1.0,True,33.0,3.0303030303030303,3,"[33, 34, 35]"
+29,Pack_ConsProd,ConsProd_Pack003.rcp,ddt,0.9649999141693115,0.0,1.0,True,20.0,0.0,1,[20]
+30,Pack_ConsProd,ConsProd_Pack004.rcp,ddt,1.0450000762939453,0.0,1.0,True,15.0,0.0,1,[15]
+31,Pack_ConsProd,ConsProd_Pack041.rcp,ddt,1.5379998683929443,0.0,1.0,True,10.0,0.0,1,[10]
+32,Pack_ConsProd,ConsProd_Pack014.rcp,ddt,2.2360000610351562,0.0,1.0,True,16.0,167.5,5,"[16, 17, 18, 81, 82]"
+33,Pack_ConsProd,ConsProd_Pack013.rcp,ddt,0.7810001373291016,0.0,1.0,True,14.0,242.85714285714286,4,"[14, 58, 59, 61]"
+34,Pack_ConsProd,ConsProd_Pack012.rcp,ddt,1.4839999675750732,0.0,1.0,True,12.0,186.9047619047619,7,"[12, 12, 13, 17, 20, 83, 84]"
+35,Pack_ConsProd,ConsProd_Pack020.rcp,ddt,9.049999952316284,0.0,1.0,True,32.0,40.625,3,"[32, 33, 70]"
+36,Pack_ConsProd,ConsProd_Pack052.rcp,ddt,17.655999898910522,0.0,1.0,True,58.0,109.19540229885058,3,"[58, 59, 247]"
+37,Pack_ConsProd,ConsProd_Pack048.rcp,ddt,12.730999946594238,0.0,1.0,True,42.0,0.0,1,[42]
+38,Pack_ConsProd,ConsProd_Pack027.rcp,ddt,2.9689998626708984,0.0,1.0,True,31.0,0.0,1,[31]
+39,Pack_ConsProd,ConsProd_Pack010.rcp,ddt,0.682999849319458,0.0,1.0,True,20.0,83.33333333333334,3,"[20, 25, 65]"
+40,Pack_ConsProd,ConsProd_Pack023.rcp,ddt,4.028000116348267,0.0,1.0,True,28.0,81.42857142857143,5,"[28, 32, 34, 78, 82]"
+41,Pack_ConsProd,ConsProd_Pack043.rcp,ddt,6.01800012588501,0.0,1.0,True,72.0,0.0,1,[72]
+42,Pack_ConsProd,ConsProd_Pack035.rcp,ddt,37.579999923706055,0.0,1.0,True,84.0,127.85714285714286,5,"[84, 214, 215, 217, 227]"
+43,Pack_ConsProd,ConsProd_Pack045.rcp,ddt,16.763000011444092,0.0,1.0,True,58.0,0.0,1,[58]
+44,Pack_ConsProd,ConsProd_Pack031.rcp,ddt,18.57100009918213,0.0,1.0,True,73.0,0.0,1,[73]
+45,Pack_ConsProd,ConsProd_Pack015.rcp,ddt,0.9110000133514404,0.0,1.0,True,12.0,0.0,1,[12]
+46,Pack_ConsProd,ConsProd_Pack029.rcp,ddt,0.8320000171661377,0.0,1.0,True,24.0,0.0,1,[24]
+47,Pack_ConsProd,ConsProd_Pack011.rcp,ddt,2.363999843597412,0.0,1.0,True,18.0,160.41666666666666,8,"[18, 19, 20, 21, 54, 80, 81, 82]"
+48,Pack_ConsProd,ConsProd_Pack002.rcp,ddt,1.7309999465942383,0.0,1.0,True,15.0,0.0,1,[15]
+49,Pack_ConsProd,ConsProd_Pack026.rcp,ddt,2.9649999141693115,0.0,1.0,True,26.0,62.5,4,"[26, 27, 28, 88]"
+50,Pack_ConsProd,ConsProd_Pack001.rcp,ddt,0.5280001163482666,0.0,1.0,True,10.0,0.0,1,[10]
+51,Pack_ConsProd,ConsProd_Pack032b.rcp,ddt,20.621000051498413,0.0,1.0,True,89.0,58.98876404494382,2,"[89, 194]"
+52,Pack_ConsProd,ConsProd_Pack050.rcp,ddt,15.145999908447266,0.0,1.0,True,50.0,83.5,4,"[50, 53, 54, 210]"
+53,Pack_ConsProd,ConsProd_Pack033.rcp,ddt,21.60800004005432,0.0,1.0,True,69.0,0.0,1,[69]
+54,Pack_ConsProd,ConsProd_Pack044.rcp,ddt,11.781999826431274,0.0,1.0,True,59.0,40.86629001883239,9,"[59, 62, 63, 65, 66, 67, 68, 112, 186]"
+55,Pack_ConsProd,ConsProd_Pack036.rcp,ddt,55.98699998855591,0.0,1.0,True,64.0,195.3125,2,"[64, 314]"
